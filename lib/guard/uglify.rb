@@ -23,6 +23,11 @@ module Guard
       super
     end
 
+    # @return [Array<String>] Paths of all sass/scss files
+    def files
+      Watcher.match_files self, Dir['**/*.js']
+    end
+
     def start
       if @options[:all_on_start]
         run_all
@@ -31,18 +36,12 @@ module Guard
     end
 
     def run_all
-      run_on_change(
-        Watcher.match_files(
-          self,
-          Dir.glob(File.join(::Guard.listener.directory, '**', '*.js')).
-          map {|f| f[::Guard.listener.directory.size+1..-1] }
-        )
-      )
+      run_on_changes files
     end
 
-    def run_on_change(paths)
+    def run_on_changes(paths)
       paths.each do |file|
-        if !file.match /\.min\.js$/
+        if !file.match(/\.min\.js$/)
           uglify(file)
         end
       end
