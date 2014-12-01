@@ -13,10 +13,10 @@ Gem::Specification.new do |s|
   s.description = %q{guard file for the uglifier gem}
 
   s.rubyforge_project = "guard-uglify"
-  
-  s.add_dependency 'guard', '>= 0.2.2'
+
+  s.add_dependency 'guard', '~> 2.8'
   s.add_dependency "uglifier"
-  
+
   s.files        = Dir.glob('{lib}/**/*') #+ %w[LICENSE README.rdoc]
   s.require_path = 'lib'
 end
