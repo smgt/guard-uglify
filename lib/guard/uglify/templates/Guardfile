@@ -1,3 +1,11 @@
-guard 'uglify', :input => 'app/assets/javascripts/application.js', :output => "public/javascripts/application.js" do
-  watch (%r{app/assets/javascripts/application.js})
-end
+guard 'uglify',
+  :input => "app/assets/javascripts",
+  :output => "public/javascripts",
+  :uglifier => {
+      :mangle => {
+        :toplevel => true
+      },
+      :compress => {
+        :drop_console => true,
+      }
+    }

@@ -51,9 +51,8 @@ module Guard
 
     def uglify(file)
       begin
-        uglified = Uglifier.new.compile(File.read(file))
-        #File.open(@output,'w'){ |f| f.write(uglified) }
-        uglified_path = write_file(uglified, options[:output], file)
+        uglified = Uglifier.new(@options[:uglifier]).compile(File.read(file))
+        uglified_path = write_file(uglified, options[:output], file.sub(/.js$/, '.min.js'))
         msg = "Uglified #{File.basename(file)} -> #{File.basename(uglified_path)}"
         ::Guard::UI.info msg
         ::Guard::Notifier.notify msg, :title => 'Guard::Uglify'
