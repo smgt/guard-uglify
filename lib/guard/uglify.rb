@@ -1,11 +1,11 @@
 require 'guard'
-require 'guard/guard'
+require 'guard/plugin'
 require 'guard/watcher'
 
 require 'uglifier'
 
 module Guard
-  class Uglify < Guard
+  class Uglify < Plugin
 
     DEFAULTS = {
       :output       => 'js',
@@ -13,14 +13,14 @@ module Guard
       :all_on_start => false
     }
 
-    def initialize(watchers=[], options={})
+    def initialize(options={})
       @options = options
       if options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
-        watchers << ::Guard::Watcher.new(%r{^#{ options.delete(:input) }/(.+\.js)$})
+        options[:watchers] << ::Guard::Watcher.new(%r{^#{ options[:input] }/(.+\.js)$})
       end
       options = DEFAULTS.merge(options)
-      super(watchers, options)
+      super
     end
 
     def start
