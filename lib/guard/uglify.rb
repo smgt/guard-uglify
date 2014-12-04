@@ -1,11 +1,11 @@
 require 'guard'
-require 'guard/guard'
+require 'guard/plugin'
 require 'guard/watcher'
 
 require 'uglifier'
 
 module Guard
-  class Uglify < Guard
+  class Uglify < Plugin
 
     DEFAULTS = {
       :output       => 'js',
@@ -13,14 +13,19 @@ module Guard
       :all_on_start => false
     }
 
-    def initialize(watchers=[], options={})
+    def initialize(options={})
       @options = options
       if options[:input]
         options[:output] = options[:input] unless options.has_key?(:output)
-        watchers << ::Guard::Watcher.new(%r{^#{ options.delete(:input) }/(.+\.js)$})
+        options[:watchers] << ::Guard::Watcher.new(%r{^#{ options[:input] }/(.+\.js)$})
       end
       options = DEFAULTS.merge(options)
-      super(watchers, options)
+      super
+    end
+
+    # @return [Array<String>] Paths of all sass/scss files
+    def files
+      Watcher.match_files self, Dir['**/*.js']
     end
 
     def start
@@ -31,18 +36,12 @@ module Guard
     end
 
     def run_all
-      run_on_change(
-        Watcher.match_files(
-          self,
-          Dir.glob(File.join(::Guard.listener.directory, '**', '*.js')).
-          map {|f| f[::Guard.listener.directory.size+1..-1] }
-        )
-      )
+      run_on_changes files
     end
 
-    def run_on_change(paths)
+    def run_on_changes(paths)
       paths.each do |file|
-        if !file.match /\.min\.js$/
+        if !file.match(/\.min\.js$/)
           uglify(file)
         end
       end
@@ -52,9 +51,8 @@ module Guard
 
     def uglify(file)
       begin
-        uglified = Uglifier.new.compile(File.read(file))
-        #File.open(@output,'w'){ |f| f.write(uglified) }
-        uglified_path = write_file(uglified, options[:output], file)
+        uglified = Uglifier.new(@options[:uglifier]).compile(File.read(file))
+        uglified_path = write_file(uglified, options[:output], file.sub(/.js$/, '.min.js'))
         msg = "Uglified #{File.basename(file)} -> #{File.basename(uglified_path)}"
         ::Guard::UI.info msg
         ::Guard::Notifier.notify msg, :title => 'Guard::Uglify'
